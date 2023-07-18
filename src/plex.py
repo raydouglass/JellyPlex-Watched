@@ -16,19 +16,6 @@ from src.library import (
     generate_library_guids_dict,
 )
 
-
-# Bypass hostname validation for ssl. Taken from https://github.com/pkkid/python-plexapi/issues/143#issuecomment-775485186
-class HostNameIgnoringAdapter(requests.adapters.HTTPAdapter):
-    def init_poolmanager(self, connections, maxsize, block=..., **pool_kwargs):
-        self.poolmanager = PoolManager(
-            num_pools=connections,
-            maxsize=maxsize,
-            block=block,
-            assert_hostname=False,
-            **pool_kwargs,
-        )
-
-
 def get_movie_guids(video, completed=True):
     logger(f"Plex: {video.title} {video.guids} {video.locations}", 3)
 
@@ -387,8 +374,8 @@ class Plex:
         if ssl_bypass:
             # Session for ssl bypass
             session = requests.Session()
-            # By pass ssl hostname check https://github.com/pkkid/python-plexapi/issues/143#issuecomment-775485186
-            session.mount("https://", HostNameIgnoringAdapter())
+            session.verify = False
+
         self.session = session
         self.plex = self.login(self.baseurl, self.token)
         self.admin_user = self.plex.myPlexAccount()
